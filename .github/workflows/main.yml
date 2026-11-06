@@ -1,0 +1,39 @@
+name: Build ALPHA (Pojav Reborn base)
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: TeamPojavLauncher/PojavLauncher
+          ref: v3_openjdk
+          submodules: recursive
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Accept Android licenses
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+
+      - name: Language list
+        run: bash scripts/languagelist_updater.sh || true
+
+      - name: Rename app
+        run: |
+          F=app_pojavlauncher/src/main/res/values/strings.xml
+          if [ -f "$F" ]; then sed -i 's|<string name="app_name">[^<]*</string>|<string name="app_name">ALPHA LAUNCHER</string>|' "$F"; fi
+
+      - name: Build debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew :app_pojavlauncher:assembleDebug --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alpha-pojav-debug-apk
+          path: app_pojavlauncher/build/outputs/apk/debug/*.apk
