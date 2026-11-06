@@ -33,7 +33,11 @@ jobs:
           chmod +x gradlew
           ./gradlew :app_pojavlauncher:assembleDebug --stacktrace
 
+      - name: Find APKs
+        run: find . -name "*.apk" | head -20
+
       - uses: actions/upload-artifact@v4
         with:
           name: alpha-pojav-debug-apk
-          path: app_pojavlauncher/build/outputs/apk/debug/*.apk
+          path: "**/build/outputs/apk/**/*.apk"
+          if-no-files-found: error
